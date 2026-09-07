@@ -1,0 +1,10 @@
+{
+  "name": "devops-week9-app",
+  "version": "1.0.0",
+  "description": "Simple Node.js app for CI/CD pipeline demo",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node test.js"
+  }
+}
