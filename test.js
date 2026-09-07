@@ -4,7 +4,7 @@ console.log('Running basic test...');
 
 const req = http.request({
   hostname: 'localhost',
-  port: 3000,
+  port: 3500,
   path: '/',
   method: 'GET'
 }, (res) => {
