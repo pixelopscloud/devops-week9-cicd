@@ -1,10 +1,12 @@
 const http = require('http');
 
+const PORT = process.env.PORT || 3500;
+
 console.log('Running basic test...');
 
 const req = http.request({
   hostname: 'localhost',
-  port: 3500,
+  port: PORT,
   path: '/',
   method: 'GET'
 }, (res) => {

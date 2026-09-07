@@ -4,6 +4,7 @@ pipeline {
     environment {
         APP_NAME = "devops-week9-app"
         IMAGE_TAG = "devops-week9-app:${BUILD_NUMBER}"
+        TEST_PORT = "4000"
     }
 
     stages {
@@ -27,12 +28,14 @@ pipeline {
             steps {
                 echo 'Starting app in background and running test...'
                 sh '''
-                    node app.js &
+                    fuser -k ${TEST_PORT}/tcp || true
+                    sleep 1
+                    PORT=${TEST_PORT} node app.js &
                     SERVER_PID=$!
                     sleep 2
-                    node test.js
+                    PORT=${TEST_PORT} node test.js
                     TEST_RESULT=$?
-                    kill $SERVER_PID
+                    kill $SERVER_PID || true
                     exit $TEST_RESULT
                 '''
             }
