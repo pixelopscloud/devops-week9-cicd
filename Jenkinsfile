@@ -2,31 +2,31 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = "devops-week9-app"
-        IMAGE_TAG = "devops-week9-app:${BUILD_NUMBER}"
-        TEST_PORT = "4000"
+        APP_NAME   = "devops-week9-app"
+        IMAGE_TAG  = "devops-week9-app:${BUILD_NUMBER}"
+        TEST_PORT  = "4000"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                echo 'Checking out code from GitHub...'
+                echo 'Checking out source code from GitHub...'
                 checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Installing dependencies / building app...'
+                echo 'Installing dependencies...'
                 sh 'node -v'
-                sh 'echo "Build stage completed successfully"'
+                sh 'npm install'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Starting app in background and running test...'
+                echo 'Running automated tests on a temporary port...'
                 sh '''
                     fuser -k ${TEST_PORT}/tcp || true
                     sleep 1
@@ -43,8 +43,9 @@ pipeline {
 
         stage('Package') {
             steps {
-                echo 'Packaging application...'
+                echo 'Packaging application artifacts...'
                 sh 'tar -czf ${APP_NAME}.tar.gz app.js package.json'
+                archiveArtifacts artifacts: '*.tar.gz', fingerprint: true
             }
         }
 
@@ -52,6 +53,7 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
                 sh 'docker build -t ${IMAGE_TAG} .'
+                sh 'docker tag ${IMAGE_TAG} ${APP_NAME}:latest'
             }
         }
 
@@ -59,10 +61,14 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo "Pipeline completed successfully. Image: ${IMAGE_TAG}"
         }
         failure {
-            echo 'Pipeline failed. Check logs above.'
+            echo 'Pipeline failed. Check the stage logs above for details.'
+        }
+        always {
+            echo 'Cleaning up temporary test processes if any remain...'
+            sh 'fuser -k ${TEST_PORT}/tcp || true'
         }
     }
 }
